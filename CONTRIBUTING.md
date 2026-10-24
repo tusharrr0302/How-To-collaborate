@@ -10,11 +10,12 @@ Whether you are fixing a typo in documentation, solving a bug, or implementing a
 1. [Code of Conduct & Community Standards](#code-of-conduct--community-standards)
 2. [Getting Started (Fork & Clone)](#getting-started-fork--clone)
 3. [Branching Strategy](#branching-strategy)
-4. [Writing Focused Commits](#writing-focused-commits)
-5. [Reporting Bugs & Proposing Features](#reporting-bugs--proposing-features)
-6. [Submitting a Pull Request](#submitting-a-pull-request)
-7. [Code Quality Guidelines](#code-quality-guidelines)
-8. [Code Review Etiquette](#code-review-etiquette)
+4. [Syncing With Upstream & Resolving Conflicts](#syncing-with-upstream--resolving-conflicts)
+5. [Writing Focused Commits](#writing-focused-commits)
+6. [Reporting Bugs & Proposing Features](#reporting-bugs--proposing-features)
+7. [Submitting a Pull Request](#submitting-a-pull-request)
+8. [Code Quality Guidelines](#code-quality-guidelines)
+9. [Code Review Etiquette](#code-review-etiquette)
 
 ---
 
@@ -80,6 +81,43 @@ git checkout -b feat/my-new-feature
 
 ---
 
+## Syncing With Upstream & Resolving Conflicts
+
+While you work, the original repository may move ahead. Bring those changes in **before** you open your pull request:
+
+```bash
+git fetch upstream              # download new upstream commits, change nothing
+git merge upstream/main         # fold them into your current branch
+```
+
+If both you and upstream touched the same lines, Git stops and marks a **merge conflict**:
+
+```
+<<<<<<< HEAD
+Your version of the line
+=======
+Upstream's version of the line
+>>>>>>> upstream/main
+```
+
+Resolve one cleanly:
+
+1. `git status` lists every conflicted file.
+2. Open each file, find the `<<<<<<<` / `=======` / `>>>>>>>` markers, and replace all three with the **correct final code** — sometimes that is one side, sometimes a hand-merged mix of both.
+3. Stage the resolved file: `git add <file>`.
+4. When no conflicts remain, finish the merge: `git commit` (Git pre-fills the message).
+5. Changed your mind mid-merge? `git merge --abort` returns the branch to exactly where it was.
+
+```
+        A---B---C  upstream/main
+             \
+              D---E  your branch, after git merge upstream/main
+```
+
+> Tip: small, frequent syncs produce smaller, easier conflicts than one big sync on PR day.
+
+---
+
 ## Writing Focused Commits
 
 A great commit history makes code easier to review, debug, and understand months later.
@@ -89,6 +127,21 @@ A great commit history makes code easier to review, debug, and understand months
 2. **Use the imperative mood** in the subject line (e.g., `Add task search filter` rather than `Added task search filter` or `Adds task search filter`).
 3. **Limit the subject line to 50–72 characters.**
 4. **Provide a body explanation** when the reason behind a change is not obvious from the diff alone.
+
+### Conventional Commits
+
+Prefix the subject with a type so the history scans cleanly (the examples below follow it):
+
+| Type | Use for |
+| :--- | :--- |
+| `feat:` | A new feature |
+| `fix:` | A bug fix |
+| `docs:` | Documentation only |
+| `style:` | Formatting, whitespace, naming (no logic change) |
+| `refactor:` | Restructuring without changing behaviour |
+| `a11y:` | Accessibility improvements |
+| `test:` | Adding or correcting tests |
+| `chore:` | Tooling, config, maintenance |
 
 ### Example Commit Messages
 
@@ -111,6 +164,8 @@ asdf
 ---
 
 ## Reporting Bugs & Proposing Features
+
+Pick the template that fits when you [open a new issue](https://github.com/tusharrr0302/How-To-collaborate/issues/new/choose): [bug report](.github/ISSUE_TEMPLATE/bug_report.md), [feature request](.github/ISSUE_TEMPLATE/feature_request.md), or [documentation task](.github/ISSUE_TEMPLATE/documentation.md). The [label board](https://github.com/tusharrr0302/How-To-collaborate/labels) (`bug`, `enhancement`, `good first issue`, `a11y`, …) shows what maintainers consider the change to be.
 
 Before opening a new issue, please check existing issues to avoid duplicates.
 
@@ -171,3 +226,18 @@ Code reviews are a mutual learning conversation, not an exam.
   - Remember that critiques are about the code, not you as a person.
   - If a reviewer suggests changes, address them in new commits pushed to your branch—the PR will update automatically.
   - Don't hesitate to ask for clarification if a comment isn't clear!
+
+### Handling Review Feedback in Git
+
+```bash
+# usual case: the branch is already public on your fork — add a new commit
+git add <changed-files>
+git commit -m "fix: tighten validation after review"
+git push                        # the PR updates itself
+
+# only for commits not pushed anywhere yet: fold fixes into the last commit
+git add <changed-files>
+git commit --amend --no-edit
+```
+
+Never rewrite (`--amend`, `rebase`) commits that are already on the PR — it force-pushes away the review conversation context. After pushing, reply to each comment and re-request a review so your reviewer gets notified.

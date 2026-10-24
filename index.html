@@ -405,6 +405,61 @@
           Use these curated scenarios to teach version control, branch naming, issue tracking, and pull request reviews. Each scenario represents a real-world software development task.
         </p>
 
+        <div class="walkthrough">
+          <h4 class="walkthrough-title">The full collaboration lifecycle, step by step</h4>
+          <div class="walkthrough-tabs" role="tablist" aria-label="Git collaboration walkthrough steps">
+            <button type="button" role="tab" aria-selected="true" aria-controls="wt-step-1" id="wt-tab-1" class="wt-tab active">1. Fork</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="wt-step-2" id="wt-tab-2" class="wt-tab">2. Clone &amp; remotes</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="wt-step-3" id="wt-tab-3" class="wt-tab">3. Branch</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="wt-step-4" id="wt-tab-4" class="wt-tab">4. Commit</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="wt-step-5" id="wt-tab-5" class="wt-tab">5. Sync</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="wt-step-6" id="wt-tab-6" class="wt-tab">6. Pull request</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="wt-step-7" id="wt-tab-7" class="wt-tab">7. Review</button>
+          </div>
+
+          <div id="wt-step-1" role="tabpanel" aria-labelledby="wt-tab-1" class="wt-panel active">
+            <p>Fork creates your own copy of the repository under your GitHub account. Nothing changes for anyone else.</p>
+            <pre><code># on github.com: Fork button, top right
+# then your copy lives at github.com/&lt;you&gt;/How-To-collaborate</code></pre>
+          </div>
+          <div id="wt-step-2" role="tabpanel" aria-labelledby="wt-tab-2" class="wt-panel" hidden>
+            <p>Clone your fork, then teach it where the original lives. <code>origin</code> is yours (push here), <code>upstream</code> is the original (fetch here).</p>
+            <pre><code>git clone https://github.com/&lt;you&gt;/How-To-collaborate.git
+cd How-To-collaborate
+git remote add upstream https://github.com/tusharrr0302/How-To-collaborate.git
+git remote -v        # origin -&gt; you, upstream -&gt; original</code></pre>
+          </div>
+          <div id="wt-step-3" role="tabpanel" aria-labelledby="wt-tab-3" class="wt-panel" hidden>
+            <p>Start every task from an up-to-date main, on its own branch with a category prefix (<code>fix/</code>, <code>feat/</code>, <code>docs/</code>…).</p>
+            <pre><code>git checkout main
+git fetch upstream &amp;&amp; git merge upstream/main
+git checkout -b feat/task-search</code></pre>
+          </div>
+          <div id="wt-step-4" role="tabpanel" aria-labelledby="wt-tab-4" class="wt-panel" hidden>
+            <p>One commit does one thing: a Conventional Commits prefix, an imperative subject under 72 characters, a body when the why is not obvious.</p>
+            <pre><code>git add js/tasks.js
+git commit -m "feat: add keyword search for task titles"</code></pre>
+          </div>
+          <div id="wt-step-5" role="tabpanel" aria-labelledby="wt-tab-5" class="wt-panel" hidden>
+            <p>Before opening the PR, fold in whatever landed upstream meanwhile. If both sides touched the same lines, resolve the markers, <code>git add</code> each file, then commit the merge.</p>
+            <pre><code>git fetch upstream
+git merge upstream/main
+# conflict? git status lists the files; edit &lt;&lt;&lt;&lt;&lt;&lt;&lt;/=======/&gt;&gt;&gt;&gt;&gt;&gt;&gt; blocks
+git add &lt;file&gt; &amp;&amp; git commit        # or: git merge --abort</code></pre>
+          </div>
+          <div id="wt-step-6" role="tabpanel" aria-labelledby="wt-tab-6" class="wt-panel" hidden>
+            <p>Push the branch and open the PR against the original's main. Fill the template, link the issue with <code>Closes #12</code>, check the checklist, attach screenshots.</p>
+            <pre><code>git push -u origin feat/task-search
+# github.com shows "Compare &amp; pull request" — target tusharrr0302:main</code></pre>
+          </div>
+          <div id="wt-step-7" role="tabpanel" aria-labelledby="wt-tab-7" class="wt-panel" hidden>
+            <p>Review comments arrive; answer each one, push new commits, and the PR updates itself. Only amend commits that were never pushed.</p>
+            <pre><code>git add . &amp;&amp; git commit -m "fix: tighten validation after review"
+git push                     # never rewrite published commits
+# reply to comments, then re-request review</code></pre>
+          </div>
+        </div>
+
         <div class="scenario-accordion">
           <article class="scenario-item">
             <div class="scenario-header">
