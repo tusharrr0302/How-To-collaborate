@@ -111,6 +111,23 @@ function bindEvents() {
     });
   }
 
+  // --- Workshop walkthrough tabs ---
+  const walkTabs = document.querySelectorAll('.walkthrough-tabs .wt-tab');
+  walkTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      walkTabs.forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle('active', active);
+        t.setAttribute('aria-selected', String(active));
+        const panel = document.getElementById(t.getAttribute('aria-controls'));
+        if (panel) {
+          panel.classList.toggle('active', active);
+          panel.hidden = !active;
+        }
+      });
+    });
+  });
+
   // --- Filtering ---
   elements.filterButtons.forEach(button => {
     button.addEventListener('click', () => {
