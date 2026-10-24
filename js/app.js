@@ -35,6 +35,8 @@ import {
   clearInputError
 } from './ui.js';
 
+import { initI18n, t } from './i18n.js';
+
 // Application State
 const state = {
   tasks: [],
@@ -47,12 +49,15 @@ const state = {
  * Initializes DevBoard on DOM ready.
  */
 function init() {
+  // 0. Apply the saved (or browser) language before rendering anything
+  initI18n();
+
   // 1. Load tasks from LocalStorage
   const loadResult = loadTasksFromStorage();
   state.tasks = loadResult.tasks;
 
   if (loadResult.recovered) {
-    showToast('Recovered storage from malformed task data.', 'warning', 4500);
+    showToast(t('toast.recovered'), 'warning', 4500);
   }
 
   // 2. Initial Render
@@ -60,6 +65,9 @@ function init() {
 
   // 3. Bind Event Listeners
   bindEvents();
+
+  // 4. Re-render dynamic content when the language changes
+  document.addEventListener('devboard:languagechange', syncUI);
 }
 
 /**
@@ -92,7 +100,7 @@ function syncUI() {
 function persistTasks() {
   const saveResult = saveTasksToStorage(state.tasks);
   if (!saveResult.success) {
-    showToast(`Storage error: ${saveResult.error}`, 'error');
+    showToast(t('toast.storageError', { error: saveResult.error }), 'error');
   }
 }
 
@@ -230,14 +238,14 @@ function handleCreateTask(e) {
   // Validate title before submission
   const validation = validateTaskTitle(title);
   if (!validation.isValid) {
-    showInputError(elements.taskTitleInput, elements.titleErrorText, validation.error || 'Please enter a valid title.');
+    showInputError(elements.taskTitleInput, elements.titleErrorText, validation.error || t('error.validTitle'));
     elements.taskTitleInput.focus();
     return;
   }
 
   const result = createTask({ title, description, label });
   if (!result.success || !result.task) {
-    showToast(result.error || 'Failed to create task.', 'error');
+    showToast(result.error || t('error.createTask'), 'error');
     return;
   }
 
@@ -250,7 +258,7 @@ function handleCreateTask(e) {
   clearInputError(elements.taskTitleInput, elements.titleErrorText);
 
   syncUI();
-  showToast(`Task "${result.task.title}" created.`, 'success');
+  showToast(t('toast.taskCreated', { title: result.task.title }), 'success');
 }
 
 /**
@@ -289,7 +297,7 @@ function handleTaskListClick(e) {
 function handleToggleTask(taskId) {
   const result = toggleTaskStatus(state.tasks, taskId);
   if (!result.success || !result.toggledTask) {
-    showToast(result.error || 'Failed to toggle task.', 'error');
+    showToast(result.error || t('error.toggleTask'), 'error');
     return;
   }
 
@@ -297,8 +305,7 @@ function handleToggleTask(taskId) {
   persistTasks();
   syncUI();
 
-  const statusLabel = result.toggledTask.completed ? 'completed' : 'pending';
-  showToast(`Task marked as ${statusLabel}.`, 'info', 2500);
+  showToast(result.toggledTask.completed ? t('toast.taskCompleted') : t('toast.taskPending'), 'info', 2500);
 }
 
 /**
@@ -315,14 +322,14 @@ function handleSaveEditedTask(e) {
 
   const validation = validateTaskTitle(title);
   if (!validation.isValid) {
-    showInputError(elements.editTitleInput, elements.editTitleError, validation.error || 'Please enter a valid title.');
+    showInputError(elements.editTitleInput, elements.editTitleError, validation.error || t('error.validTitle'));
     elements.editTitleInput.focus();
     return;
   }
 
   const result = updateTask(state.tasks, taskId, { title, description, label });
   if (!result.success || !result.updatedTask) {
-    showToast(result.error || 'Failed to update task.', 'error');
+    showToast(result.error || t('error.updateTask'), 'error');
     return;
   }
 
@@ -331,7 +338,7 @@ function handleSaveEditedTask(e) {
   closeModal(elements.editModal);
   syncUI();
 
-  showToast(`Task "${result.updatedTask.title}" updated.`, 'success');
+  showToast(t('toast.taskUpdated', { title: result.updatedTask.title }), 'success');
 }
 
 /**
@@ -351,9 +358,9 @@ function handleConfirmDelete() {
     state.tasks = result.tasks;
     persistTasks();
     syncUI();
-    showToast(`Deleted task "${result.deletedTask.title}".`, 'info');
+    showToast(t('toast.taskDeleted', { title: result.deletedTask.title }), 'info');
   } else {
-    showToast('Task could not be deleted.', 'error');
+    showToast(t('error.deleteTask'), 'error');
   }
 }
 
@@ -393,7 +400,7 @@ function handleResetToSamples() {
   });
 
   syncUI();
-  showToast('Restored workshop demonstration tasks.', 'success');
+  showToast(t('toast.samplesRestored'), 'success');
 }
 
 /**

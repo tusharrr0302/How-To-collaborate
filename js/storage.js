@@ -1,15 +1,54 @@
 /**
  * storage.js
  * DevBoard - Task Persistence Module
- * 
+ *
  * Handles safe read, write, and validation of tasks to and from localStorage.
  * Includes defensive schema validation to recover gracefully from malformed data.
  */
 
+import { t } from './i18n.js';
+
 const STORAGE_KEY = 'devboard_tasks_v1';
 
 /**
+ * Returns the default sample tasks in the active language.
+ * @returns {Array<Object>}
+ */
+export function getDefaultTasks() {
+  return [
+    {
+      id: 'task-101',
+      title: t('sample.task1.title'),
+      description: t('sample.task1.desc'),
+      completed: true,
+      label: 'documentation',
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+      updatedAt: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: 'task-102',
+      title: t('sample.task2.title'),
+      description: t('sample.task2.desc'),
+      completed: false,
+      label: 'bug',
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: null
+    },
+    {
+      id: 'task-103',
+      title: t('sample.task3.title'),
+      description: t('sample.task3.desc'),
+      completed: false,
+      label: 'feature',
+      createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      updatedAt: null
+    }
+  ];
+}
+
+/**
  * Default sample tasks provided for first-time visitors or workshop demonstrations.
+ * Kept as the English baseline; use getDefaultTasks() for localized samples.
  */
 export const DEFAULT_TASKS = [
   {
@@ -67,10 +106,11 @@ export function loadTasksFromStorage() {
   try {
     const rawData = localStorage.getItem(STORAGE_KEY);
 
-    // First visit: initialize with default sample tasks
+    // First visit: initialize with localized default sample tasks
     if (rawData === null) {
-      saveTasksToStorage(DEFAULT_TASKS);
-      return { tasks: [...DEFAULT_TASKS], recovered: false, error: null };
+      const defaults = getDefaultTasks();
+      saveTasksToStorage(defaults);
+      return { tasks: [...defaults], recovered: false, error: null };
     }
 
     const parsed = JSON.parse(rawData);
@@ -133,8 +173,9 @@ export function saveTasksToStorage(tasks) {
  * @returns {Array<Object>}
  */
 export function resetStorageToDefaults() {
-  saveTasksToStorage(DEFAULT_TASKS);
-  return [...DEFAULT_TASKS];
+  const defaults = getDefaultTasks();
+  saveTasksToStorage(defaults);
+  return [...defaults];
 }
 
 /**

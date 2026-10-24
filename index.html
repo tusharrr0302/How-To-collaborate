@@ -86,7 +86,7 @@
               <polyline points="1 4 1 10 7 10"></polyline>
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
-            Reset Demo Tasks
+            <span>Reset Demo Tasks</span>
           </button>
         </div>
       </nav>
@@ -112,6 +112,12 @@
         </div>
 
         <div class="header-right">
+          <!-- Language Switcher -->
+          <div class="lang-switch" role="group" aria-label="Language">
+            <button type="button" class="lang-btn active" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" class="lang-btn" data-lang="zh" aria-pressed="false">中文</button>
+          </div>
+
           <!-- Global Search Input in Header -->
           <div class="search-box">
             <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -190,7 +196,7 @@
                   <path d="M12 20h9"></path>
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                 </svg>
-                Create Task
+                <span>Create Task</span>
               </h2>
               <span class="card-helper-text">Add a work item to track in your git branch</span>
             </div>
@@ -247,7 +253,7 @@
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
-                  Create Task
+                  <span>Create Task</span>
                 </button>
               </div>
             </form>

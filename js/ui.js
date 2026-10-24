@@ -6,6 +6,8 @@
  * and safe content rendering (no innerHTML for user inputs).
  */
 
+import { t, getLocale } from './i18n.js';
+
 /**
  * References to frequently used DOM elements.
  */
@@ -99,7 +101,7 @@ export function showToast(message, type = 'info', duration = 3500) {
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
   closeBtn.className = 'toast-close-btn';
-  closeBtn.setAttribute('aria-label', 'Dismiss notification');
+  closeBtn.setAttribute('aria-label', t('toast.dismiss'));
   closeBtn.innerHTML = `
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -163,7 +165,9 @@ export function renderStats(stats) {
   }
 
   if (elements.progressPercent) {
-    elements.progressPercent.textContent = `${stats.completionPercentage}% completed`;
+    elements.progressPercent.textContent = t('stats.percent', {
+      percent: stats.completionPercentage
+    });
   }
 }
 
@@ -175,16 +179,16 @@ export function renderStats(stats) {
 export function formatTimestamp(isoString) {
   try {
     const date = new Date(isoString);
-    if (isNaN(date.getTime())) return 'Recently';
+    if (isNaN(date.getTime())) return t('time.recently');
 
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(getLocale(), {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);
   } catch {
-    return 'Recently';
+    return t('time.recently');
   }
 }
 
@@ -197,7 +201,7 @@ export function createTaskCard(task) {
   const card = document.createElement('article');
   card.className = `task-card ${task.completed ? 'task-completed' : ''}`;
   card.dataset.taskId = task.id;
-  card.setAttribute('aria-label', `Task: ${task.title}`);
+  card.setAttribute('aria-label', t('aria.taskLabel', { title: task.title }));
 
   // Header row: Checkbox, Title, Badges
   const topRow = document.createElement('div');
@@ -211,7 +215,7 @@ export function createTaskCard(task) {
   checkbox.type = 'checkbox';
   checkbox.className = 'task-checkbox';
   checkbox.checked = Boolean(task.completed);
-  checkbox.setAttribute('aria-label', `Mark task "${task.title}" as ${task.completed ? 'pending' : 'completed'}`);
+  checkbox.setAttribute('aria-label', t(task.completed ? 'aria.markPending' : 'aria.markCompleted', { title: task.title }));
   checkbox.dataset.action = 'toggle';
   checkbox.dataset.taskId = task.id;
 
@@ -246,13 +250,16 @@ export function createTaskCard(task) {
   // Label tag
   const labelBadge = document.createElement('span');
   labelBadge.className = `task-tag tag-${task.label || 'task'}`;
-  labelBadge.textContent = task.label || 'task';
+  const labelValue = task.label || 'task';
+  const labelKey = `label.${labelValue}`;
+  const translatedLabel = t(labelKey);
+  labelBadge.textContent = translatedLabel === labelKey ? labelValue : translatedLabel;
   metaRow.appendChild(labelBadge);
 
   // Timestamp
   const timeSpan = document.createElement('span');
   timeSpan.className = 'task-date';
-  timeSpan.textContent = `Created ${formatTimestamp(task.createdAt)}`;
+  timeSpan.textContent = t('task.createdAt', { time: formatTimestamp(task.createdAt) });
   metaRow.appendChild(timeSpan);
 
   contentCol.appendChild(metaRow);
@@ -267,14 +274,14 @@ export function createTaskCard(task) {
   editBtn.className = 'btn-icon btn-edit';
   editBtn.dataset.action = 'edit';
   editBtn.dataset.taskId = task.id;
-  editBtn.setAttribute('aria-label', `Edit task: ${task.title}`);
-  editBtn.title = 'Edit task';
+  editBtn.setAttribute('aria-label', t('aria.editTask', { title: task.title }));
+  editBtn.title = t('task.edit');
   editBtn.innerHTML = `
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
     </svg>
-    <span class="btn-text">Edit</span>
+    <span class="btn-text">${t('task.edit')}</span>
   `;
 
   // Delete button
@@ -283,14 +290,14 @@ export function createTaskCard(task) {
   deleteBtn.className = 'btn-icon btn-delete';
   deleteBtn.dataset.action = 'delete';
   deleteBtn.dataset.taskId = task.id;
-  deleteBtn.setAttribute('aria-label', `Delete task: ${task.title}`);
-  deleteBtn.title = 'Delete task';
+  deleteBtn.setAttribute('aria-label', t('aria.deleteTask', { title: task.title }));
+  deleteBtn.title = t('task.delete');
   deleteBtn.innerHTML = `
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
       <polyline points="3 6 5 6 21 6"></polyline>
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
     </svg>
-    <span class="btn-text">Delete</span>
+    <span class="btn-text">${t('task.delete')}</span>
   `;
 
   actionGroup.appendChild(editBtn);
@@ -329,14 +336,14 @@ export function renderTaskList(displayTasks, totalTaskCount, currentFilter, sear
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
         </svg>
       </div>
-      <h3 class="empty-title">No tasks on the board</h3>
-      <p class="empty-desc">Your task board is completely empty. Create a new task above or load realistic Git workshop scenarios to start testing.</p>
+      <h3 class="empty-title">${t('empty.noTasksTitle')}</h3>
+      <p class="empty-desc">${t('empty.noTasksDesc')}</p>
       <div class="empty-actions">
         <button type="button" id="empty-load-samples-btn" class="btn btn-secondary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
           </svg>
-          Load Workshop Demo Tasks
+          ${t('empty.loadSamples')}
         </button>
       </div>
     `;
@@ -349,7 +356,7 @@ export function renderTaskList(displayTasks, totalTaskCount, currentFilter, sear
     }
 
     if (elements.listStatusAnnouncement) {
-      elements.listStatusAnnouncement.textContent = 'No tasks on the board.';
+      elements.listStatusAnnouncement.textContent = t('aria.noTasks');
     }
     return;
   }
@@ -359,12 +366,21 @@ export function renderTaskList(displayTasks, totalTaskCount, currentFilter, sear
     const filterEmptyState = document.createElement('div');
     filterEmptyState.className = 'empty-state';
 
-    const searchNotice = searchQuery.trim().length > 0 
-      ? `matching "${searchQuery.trim()}"` 
-      : '';
-    const statusNotice = currentFilter !== 'all' 
-      ? `with status "${currentFilter}"` 
-      : '';
+    const query = searchQuery.trim();
+    const hasQuery = query.length > 0;
+    const hasStatus = currentFilter !== 'all';
+
+    let noMatchDesc;
+    if (hasQuery && hasStatus) {
+      noMatchDesc = t('empty.noMatchBoth', {
+        status: t(`filter.${currentFilter}`),
+        query
+      });
+    } else if (hasStatus) {
+      noMatchDesc = t('empty.noMatchStatus', { status: t(`filter.${currentFilter}`) });
+    } else {
+      noMatchDesc = t('empty.noMatchQuery', { query });
+    }
 
     filterEmptyState.innerHTML = `
       <div class="empty-icon-box">
@@ -374,14 +390,18 @@ export function renderTaskList(displayTasks, totalTaskCount, currentFilter, sear
           <line x1="8" y1="11" x2="14" y2="11"></line>
         </svg>
       </div>
-      <h3 class="empty-title">No matching tasks found</h3>
-      <p class="empty-desc">No tasks ${[statusNotice, searchNotice].filter(Boolean).join(' and ')}. Try adjusting your search term or filter.</p>
+      <h3 class="empty-title">${t('empty.noMatchTitle')}</h3>
+      <p class="empty-desc"></p>
       <div class="empty-actions">
         <button type="button" id="clear-all-filters-btn" class="btn btn-secondary">
-          Clear Filters & Search
+          ${t('empty.clearFilters')}
         </button>
       </div>
     `;
+
+    // Set the description via textContent so a user-supplied query is never parsed as HTML.
+    const descEl = filterEmptyState.querySelector('.empty-desc');
+    if (descEl) descEl.textContent = noMatchDesc;
 
     container.appendChild(filterEmptyState);
 
@@ -391,7 +411,7 @@ export function renderTaskList(displayTasks, totalTaskCount, currentFilter, sear
     }
 
     if (elements.listStatusAnnouncement) {
-      elements.listStatusAnnouncement.textContent = 'No matching tasks found.';
+      elements.listStatusAnnouncement.textContent = t('aria.noMatch');
     }
     return;
   }
@@ -405,7 +425,7 @@ export function renderTaskList(displayTasks, totalTaskCount, currentFilter, sear
   container.appendChild(fragment);
 
   if (elements.listStatusAnnouncement) {
-    elements.listStatusAnnouncement.textContent = `Showing ${displayTasks.length} tasks.`;
+    elements.listStatusAnnouncement.textContent = t('aria.statusShowing', { count: displayTasks.length });
   }
 }
 

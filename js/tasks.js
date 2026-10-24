@@ -1,10 +1,12 @@
 /**
  * tasks.js
  * DevBoard - Task Domain Logic Module
- * 
+ *
  * Pure JavaScript business logic for managing tasks, validations,
  * filtering, searching, and statistics calculation.
  */
+
+import { t } from './i18n.js';
 
 /**
  * Validates task title input.
@@ -15,17 +17,17 @@
  */
 export function validateTaskTitle(rawTitle) {
   if (typeof rawTitle !== 'string') {
-    return { isValid: false, error: 'Task title must be text.', value: '' };
+    return { isValid: false, error: t('validation.text'), value: '' };
   }
 
   const trimmed = rawTitle.trim();
 
   if (trimmed.length === 0) {
-    return { isValid: false, error: 'Task title cannot be empty or just whitespace.', value: '' };
+    return { isValid: false, error: t('validation.empty'), value: '' };
   }
 
   if (trimmed.length > 150) {
-    return { isValid: false, error: 'Task title must be 150 characters or fewer.', value: trimmed };
+    return { isValid: false, error: t('validation.tooLong'), value: trimmed };
   }
 
   return { isValid: true, error: null, value: trimmed };
@@ -83,7 +85,7 @@ export function createTask({ title, description = '', label = 'task' }) {
 export function updateTask(tasks, taskId, updates) {
   const taskIndex = tasks.findIndex(t => t.id === taskId);
   if (taskIndex === -1) {
-    return { success: false, tasks, updatedTask: null, error: 'Task not found.' };
+    return { success: false, tasks, updatedTask: null, error: t('error.taskNotFound') };
   }
 
   const existingTask = tasks[taskIndex];
@@ -130,7 +132,7 @@ export function updateTask(tasks, taskId, updates) {
 export function toggleTaskStatus(tasks, taskId) {
   const taskIndex = tasks.findIndex(t => t.id === taskId);
   if (taskIndex === -1) {
-    return { success: false, tasks, toggledTask: null, error: 'Task not found.' };
+    return { success: false, tasks, toggledTask: null, error: t('error.taskNotFound') };
   }
 
   const targetTask = tasks[taskIndex];
