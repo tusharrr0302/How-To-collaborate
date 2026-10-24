@@ -72,6 +72,7 @@ export const elements = {
 
 // Track previously focused element for accessible modal closing
 let previouslyFocusedElement = null;
+let activeModal = null;
 
 /**
  * Displays a toast notification.
@@ -410,8 +411,63 @@ export function renderTaskList(displayTasks, totalTaskCount, currentFilter, sear
 }
 
 /**
+ * Returns the focusable elements inside a modal, in DOM order.
+ * Excludes hidden/disabled elements and elements with tabindex="-1".
+ * @param {HTMLElement} modal
+ * @returns {HTMLElement[]}
+ */
+function getFocusableElements(modal) {
+  const selector = [
+    'a[href]',
+    'button:not([disabled])',
+    'textarea:not([disabled])',
+    'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(', ');
+
+  return Array.from(modal.querySelectorAll(selector)).filter((el) => {
+    if (el.hasAttribute('disabled') || el.getAttribute('aria-hidden') === 'true') return false;
+    return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+  });
+}
+
+/**
+ * Keeps Tab and Shift+Tab focus inside the active modal.
+ * @param {KeyboardEvent} e
+ */
+function handleModalKeydown(e) {
+  if (e.key !== 'Tab' || !activeModal) return;
+
+  const focusable = getFocusableElements(activeModal);
+  if (focusable.length === 0) {
+    e.preventDefault();
+    return;
+  }
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const current = document.activeElement;
+
+  if (e.shiftKey) {
+    if (current === first || !activeModal.contains(current)) {
+      e.preventDefault();
+      last.focus();
+    }
+    return;
+  }
+
+  if (current === last || !activeModal.contains(current)) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+document.addEventListener('keydown', handleModalKeydown);
+
+/**
  * Opens an accessible modal dialog.
- * @param {HTMLElement} modal 
+ * @param {HTMLElement} modal
  */
 export function openModal(modal) {
   if (!modal) return;
@@ -420,9 +476,10 @@ export function openModal(modal) {
   modal.classList.add('modal-active');
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-is-open');
+  activeModal = modal;
 
   // Focus the first focusable element inside the modal
-  const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const focusable = getFocusableElements(modal);
   if (focusable.length > 0) {
     /** @type {HTMLElement} */ (focusable[0]).focus();
   }
@@ -430,7 +487,7 @@ export function openModal(modal) {
 
 /**
  * Closes an accessible modal dialog.
- * @param {HTMLElement} modal 
+ * @param {HTMLElement} modal
  */
 export function closeModal(modal) {
   if (!modal) return;
@@ -438,6 +495,9 @@ export function closeModal(modal) {
   modal.classList.remove('modal-active');
   modal.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('modal-is-open');
+  if (activeModal === modal) {
+    activeModal = null;
+  }
 
   if (previouslyFocusedElement && typeof previouslyFocusedElement.focus === 'function') {
     previouslyFocusedElement.focus();
