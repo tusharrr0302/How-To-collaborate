@@ -28,6 +28,9 @@ jobs:
           node -c js/ui.js
           echo "All JavaScript modules pass syntax verification!"
 
+      - name: Run unit tests
+        run: node --test tests/*.mjs
+
       - name: Verify Core Files Exist
         run: |
           test -f index.html || exit 1
